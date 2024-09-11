@@ -33,7 +33,7 @@ app.post("/api/users", async (req, res)=>{
 app.post("/api/users/:_id/exercises", async (req, res)=>{
   const _id = req.params._id;
   const { description, duration, date } = req.body
-  const dateToUse = new Date().toDateString(date || Date())
+  const dateToUse = new Date(date || Date.now()).toDateString()
   if(!description || !duration) return res.json({error : "Invalid input"})
   const updatedLogs = await database.collection("users").findOneAndUpdate({
     _id : new ObjectId(_id)
@@ -42,13 +42,12 @@ app.post("/api/users/:_id/exercises", async (req, res)=>{
     description,
     date : dateToUse
   }}})
-  console.log("The updated logs are", updatedLogs)
   if(!updatedLogs) return res.json("log post modification failed")
   return res.json({
     username : updatedLogs.username,
     _id,
     date : dateToUse,
-    duration,
+    duration : Number(duration),
     description
   })
 })
@@ -59,15 +58,15 @@ app.get("/api/users/:_id/logs", async (req, res)=>{
   const user = await database.collection("users").findOne(
     { _id : new ObjectId(_id) })
   if(!user) return res.json("cannot find user")
-    console.log("THe iso date ", new Date(user.logs[3].date))
   let userLogs = user.logs;
   if(from  && to){
-    userLogs = userLogs.filter(log => ( new Date(log.date) >= new Date(from)) && (
-      new Date(log.date) <= new Date(to) 
-    ))
+    userLogs = userLogs.filter(log => {
+      const logDate = new Date(log.date)
+      return logDate >= new Date(from) && logDate <= new Date(to)
+    })
   }
   if(limit){
-    userLogs = userLogs.slice(0, limit + 1)
+    userLogs = userLogs.slice(0, Number(limit))
   }
    return res.json({
     username : user.username,
