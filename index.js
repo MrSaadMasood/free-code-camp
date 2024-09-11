@@ -33,14 +33,14 @@ app.post("/api/shorturl", (req, res)=>{
     map[counter.toString()] = url;
     return res.json({
       original_url: url,
-      shorturl : counter
+      short_url : counter
     })
   })
 })
 
-app.get("/api/shorturl/:shorturl", (req, res)=>{
-  const shorturl = req.params.shorturl;
-  const redirectionUrl = map[shorturl]
+app.get("/api/shorturl/:short_url", (req, res)=>{
+  const short = req.params.short_url;
+  const redirectionUrl = map[short]
   if(!redirectionUrl) return res.json({ error : "invalid url"})
   return res.redirect(redirectionUrl)
 })
